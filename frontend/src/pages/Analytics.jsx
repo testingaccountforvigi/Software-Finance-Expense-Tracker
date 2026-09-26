@@ -189,18 +189,18 @@ const Analytics = () => {
         <div className="space-y-3">
           {topMerchants.map((merchant, index) => (
             <div key={merchant.merchant} className="flex items-center justify-between py-2">
-              <div className="flex items-center flex-1">
-                <span className="w-6 text-sm text-neutral-500">{index + 1}</span>
-                <p className="text-sm font-medium text-neutral-900 ml-4">{merchant.merchant}</p>
+              <div className="flex items-center flex-1 min-w-0">
+                <span className="w-6 flex-shrink-0 text-sm text-neutral-500">{index + 1}</span>
+                <p className="text-sm font-medium text-neutral-900 ml-2 sm:ml-4 truncate">{merchant.merchant}</p>
               </div>
-              <div className="flex items-center">
-                <div className="w-48 bg-neutral-100 rounded-full h-2 mr-4">
+              <div className="flex items-center flex-shrink-0 ml-2">
+                <div className="hidden sm:block w-32 md:w-48 bg-neutral-100 rounded-full h-2 mr-4">
                   <div
                     className="bg-neutral-900 h-2 rounded-full"
                     style={{ width: `${(merchant.amount / topMerchants[0].amount) * 100}%` }}
                   />
                 </div>
-                <p className="text-sm font-semibold text-neutral-900 w-28 text-right">
+                <p className="text-sm font-semibold text-neutral-900 w-20 sm:w-28 text-right">
                   ₹{merchant.amount.toLocaleString('en-IN')}
                 </p>
               </div>

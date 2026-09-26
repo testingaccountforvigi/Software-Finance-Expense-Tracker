@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useToast } from '../components/Toast';
-import { Plus, FileText } from 'lucide-react';
+import { Plus, FileText, Send, Mail } from 'lucide-react';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import Input from '../components/Input';
@@ -16,10 +16,17 @@ const Reimbursements = () => {
   const [reimbursements, setReimbursements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [selectedReimbursement, setSelectedReimbursement] = useState(null);
   
   const [formData, setFormData] = useState({
     expenseId: '',
     description: '',
+  });
+
+  const [emailData, setEmailData] = useState({
+    recipientEmail: '',
+    customEmailBody: '',
   });
 
   // Fetch reimbursements from database
@@ -83,6 +90,44 @@ const Reimbursements = () => {
     } catch (err) {
       console.error('Failed to create reimbursement:', err);
       showError(err.message || 'Failed to create reimbursement');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenEmailModal = (reimb) => {
+    setSelectedReimbursement(reimb);
+    setEmailData({
+      recipientEmail: '',
+      customEmailBody: `I am requesting reimbursement for ₹${parseFloat(reimb.amount).toLocaleString('en-IN')} spent on ${new Date(reimb.expense_date).toLocaleDateString('en-IN')} for ${reimb.description}.`,
+    });
+    setShowEmailModal(true);
+  };
+
+  const handleSubmitForReview = async () => {
+    if (!emailData.recipientEmail || !emailData.recipientEmail.includes('@')) {
+      showError('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await api.reimbursement.submitReimbursement(
+        selectedReimbursement.id,
+        emailData.recipientEmail,
+        emailData.customEmailBody
+      );
+
+      if (response.success) {
+        success('Reimbursement submitted and email sent');
+        setShowEmailModal(false);
+        setSelectedReimbursement(null);
+        setEmailData({ recipientEmail: '', customEmailBody: '' });
+        loadReimbursements();
+      }
+    } catch (err) {
+      console.error('Failed to submit reimbursement:', err);
+      showError(err.message || 'Failed to submit reimbursement');
     } finally {
       setLoading(false);
     }
@@ -172,7 +217,18 @@ const Reimbursements = () => {
               </div>
 
               <div className="flex items-center justify-end space-x-2 pt-4 border-t border-neutral-200">
-                {(reimb.status === 'DRAFT' || reimb.status === 'SUBMITTED' || reimb.status === 'APPROVED') && reimb.payment_status !== 'PAID' && (
+                {reimb.status === 'DRAFT' && (
+                  <Button
+                    size="sm"
+                    onClick={() => handleOpenEmailModal(reimb)}
+                    className="flex items-center"
+                  >
+                    <Send size={14} strokeWidth={2} className="mr-1" />
+                    Submit for Review
+                  </Button>
+                )}
+                
+                {(reimb.status === 'SUBMITTED' || reimb.status === 'APPROVED') && reimb.payment_status !== 'PAID' && (
                   <Button
                     size="sm"
                     onClick={() => handleMarkPaid(reimb.id)}
@@ -240,6 +296,95 @@ const Reimbursements = () => {
             </Button>
             <Button onClick={handleSubmit} disabled={!formData.expenseId || !formData.description || loading}>
               {loading ? 'Creating...' : 'Create Reimbursement'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Email Submit Modal */}
+      <Modal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        title="Submit for Review"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="flex items-start">
+              <Mail size={20} className="text-blue-600 mt-0.5 mr-3 flex-shrink-0" strokeWidth={2} />
+              <div>
+                <p className="text-sm font-medium text-blue-900 mb-1">Email Notification</p>
+                <p className="text-xs text-blue-700">
+                  An email will be sent to the reviewer with the reimbursement details
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Input
+            label="Reviewer Email Address"
+            type="email"
+            value={emailData.recipientEmail}
+            onChange={(e) => setEmailData({ ...emailData, recipientEmail: e.target.value })}
+            placeholder="reviewer@company.com"
+            required
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+              Custom Email Message (Optional)
+            </label>
+            <p className="text-xs text-neutral-500 mb-2">
+              Customize the email body or leave the default message
+            </p>
+            <textarea
+              value={emailData.customEmailBody}
+              onChange={(e) => setEmailData({ ...emailData, customEmailBody: e.target.value })}
+              placeholder="Enter your custom message..."
+              rows={5}
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 text-sm"
+            />
+          </div>
+
+          {selectedReimbursement && (
+            <div className="bg-neutral-50 rounded-lg p-4">
+              <p className="text-xs text-neutral-500 mb-2 font-medium">Email Preview:</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">Amount:</span>
+                  <span className="font-semibold text-neutral-900">
+                    ₹{parseFloat(selectedReimbursement.amount).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">Date:</span>
+                  <span className="font-medium text-neutral-900">
+                    {new Date(selectedReimbursement.expense_date).toLocaleDateString('en-IN')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-neutral-600">Reason:</span>
+                  <p className="text-neutral-900 mt-1">{selectedReimbursement.description}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t">
+            <Button variant="secondary" onClick={() => setShowEmailModal(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmitForReview} 
+              disabled={!emailData.recipientEmail || loading}
+              className="flex items-center"
+            >
+              {loading ? 'Sending...' : (
+                <>
+                  <Send size={14} strokeWidth={2} className="mr-1" />
+                  Send & Submit
+                </>
+              )}
             </Button>
           </div>
         </div>

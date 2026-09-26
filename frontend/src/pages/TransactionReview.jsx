@@ -6,6 +6,7 @@ import Button from '../components/Button';
 import Select from '../components/Select';
 import Input from '../components/Input';
 import EmptyState from '../components/EmptyState';
+import Modal from '../components/Modal';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const TransactionReview = () => {
@@ -17,6 +18,7 @@ const TransactionReview = () => {
   const [reviewingTransaction, setReviewingTransaction] = useState(null);
   const [formData, setFormData] = useState({});
   const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [showMobileModal, setShowMobileModal] = useState(false);
 
   // Refresh transactions when page loads or when navigated with refresh flag
   useEffect(() => {
@@ -81,6 +83,9 @@ const TransactionReview = () => {
     } else {
       setShowDuplicateWarning(false);
     }
+    
+    // Open modal on mobile
+    setShowMobileModal(true);
   };
 
   const handleApprove = async () => {
@@ -94,6 +99,7 @@ const TransactionReview = () => {
       setReviewingTransaction(null);
       setFormData({});
       setShowDuplicateWarning(false);
+      setShowMobileModal(false);
     } catch (error) {
       console.error('Failed to approve transaction:', error);
     }
@@ -107,6 +113,7 @@ const TransactionReview = () => {
         setReviewingTransaction(null);
         setFormData({});
         setShowDuplicateWarning(false);
+        setShowMobileModal(false);
       } catch (error) {
         console.error('Failed to reject transaction:', error);
       }
@@ -117,6 +124,7 @@ const TransactionReview = () => {
     setReviewingTransaction(null);
     setFormData({});
     setShowDuplicateWarning(false);
+    setShowMobileModal(false);
   };
 
   const categoryOptions = categories.map(cat => ({ value: cat.id, label: cat.name }));
@@ -211,8 +219,8 @@ const TransactionReview = () => {
           ))}
         </div>
 
-        {/* Review Panel */}
-        <div className="lg:sticky lg:top-8 h-fit">
+        {/* Review Panel - Desktop */}
+        <div className="hidden lg:block lg:sticky lg:top-8 h-fit">
           {reviewingTransaction ? (
             <div className="bg-white rounded-xl border border-neutral-200 p-6">
               <h2 className="text-lg font-semibold text-neutral-900 mb-4">Review Transaction</h2>
@@ -307,6 +315,101 @@ const TransactionReview = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile Modal */}
+      <Modal
+        isOpen={showMobileModal}
+        onClose={handleCancel}
+        title="Review Transaction"
+        size="lg"
+      >
+        {reviewingTransaction && (
+          <div>
+            {showDuplicateWarning && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <div className="flex items-start">
+                  <AlertTriangle size={20} strokeWidth={2} className="text-yellow-600 mr-3 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-900 mb-1">Possible Duplicate</p>
+                    <p className="text-xs text-yellow-700">
+                      A similar expense already exists with the same amount, merchant, and date.
+                      Please verify before approving.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-neutral-700 mb-2">Raw Notification</h3>
+              <div className="bg-neutral-50 rounded-lg p-3">
+                <p className="text-sm text-neutral-700 font-mono leading-relaxed">
+                  {reviewingTransaction.raw_message}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <Input
+                label="Amount"
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
+                step="0.01"
+              />
+
+              <Input
+                label="Merchant"
+                type="text"
+                value={formData.merchant}
+                onChange={(e) => setFormData({ ...formData, merchant: e.target.value })}
+              />
+
+              <Input
+                label="Date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+
+              <Select
+                label="Category"
+                value={formData.categoryId}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                options={categoryOptions}
+                required
+              />
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="secondary"
+                onClick={handleCancel}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleReject}
+                size="md"
+                className="flex items-center"
+              >
+                <X size={16} strokeWidth={2} className="mr-1.5" />
+                Reject
+              </Button>
+              <Button
+                onClick={handleApprove}
+                className="flex-1 flex items-center justify-center"
+                disabled={!formData.categoryId}
+              >
+                <Check size={16} strokeWidth={2} className="mr-1.5" />
+                Approve
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

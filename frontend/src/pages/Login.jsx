@@ -114,12 +114,12 @@ const Login = () => {
                 />
                 <span className="ml-2 text-sm text-neutral-700">Remember me</span>
               </label>
-              <button
+              {/* <button
                 type="button"
                 className="text-sm text-neutral-700 hover:text-neutral-900"
               >
                 Forgot password?
-              </button>
+              </button> */}
             </div>
 
             <Button
