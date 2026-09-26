@@ -228,7 +228,7 @@ const Simulator = () => {
           </div>
 
           {/* Custom Message */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-6 mb-6">
+          {/* <div className="bg-white rounded-xl border border-neutral-200 p-6 mb-6">
             <h2 className="text-lg font-semibold text-neutral-900 mb-4">Or Create Custom</h2>
             <textarea
               value={customMessage}
@@ -237,7 +237,7 @@ const Simulator = () => {
               rows={4}
               className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900"
             />
-          </div>
+          </div> */}
 
           {/* Simulate Button */}
           <div className="flex justify-center">
