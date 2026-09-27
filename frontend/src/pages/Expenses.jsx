@@ -162,26 +162,27 @@ const Expenses = () => {
 
       {/* Expenses List */}
       {filteredExpenses.length > 0 ? (
-        <div className="bg-white rounded-xl border border-neutral-200">
-          <table className="w-full">
+        <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
               <thead className="bg-neutral-50 border-b border-neutral-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                     Merchant
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                     Payment
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -195,45 +196,45 @@ const Expenses = () => {
                       className="hover:bg-neutral-50 cursor-pointer transition-colors"
                       onClick={() => navigate(`/expenses/${expense.id}`)}
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-4 sm:px-6 py-4">
                         <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: category?.color + '20' || '#f5f5f5' }}>
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: category?.color + '20' || '#f5f5f5' }}>
                             <div className="w-5 h-5 rounded-full" style={{ backgroundColor: category?.color || '#6b7280' }} />
                           </div>
-                          <div className="ml-3">
-                            <p className="text-sm font-medium text-neutral-900">{expense.merchant}</p>
-                            <p className="text-xs text-neutral-500">{expense.description}</p>
+                          <div className="ml-3 min-w-0">
+                            <p className="text-sm font-medium text-neutral-900 truncate">{expense.merchant}</p>
+                            <p className="text-xs text-neutral-500 truncate">{expense.description}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 sm:px-6 py-4">
                         <span
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
                           style={{ backgroundColor: category?.color + '20', color: category?.color }}
                         >
                           {expense.categoryName}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-700">
+                      <td className="px-4 sm:px-6 py-4 text-sm text-neutral-700 whitespace-nowrap">
                         {new Date(expense.date).toLocaleDateString('en-IN', { 
                           year: 'numeric', 
                           month: 'short', 
                           day: 'numeric' 
                         })}
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-700">
+                      <td className="px-4 sm:px-6 py-4 text-sm text-neutral-700 whitespace-nowrap">
                         {paymentMethods.find(pm => pm.id === expense.paymentMethodId)?.type || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 text-sm font-semibold text-neutral-900 text-right">
+                      <td className="px-4 sm:px-6 py-4 text-sm font-semibold text-neutral-900 text-right whitespace-nowrap">
                         ₹{expense.amount.toLocaleString('en-IN')}
                       </td>
-                      <td className="px-6 py-4 text-right text-sm">
+                      <td className="px-4 sm:px-6 py-4 text-right text-sm">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/expenses/${expense.id}`);
                           }}
-                          className="text-neutral-600 hover:text-neutral-900 inline-flex items-center"
+                          className="text-neutral-600 hover:text-neutral-900 inline-flex items-center whitespace-nowrap"
                         >
                           <Eye size={16} strokeWidth={1.8} className="mr-1" />
                           View
@@ -244,6 +245,7 @@ const Expenses = () => {
                 })}
               </tbody>
             </table>
+          </div>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-neutral-200 p-12">
